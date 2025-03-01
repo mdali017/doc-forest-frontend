@@ -21,11 +21,35 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useTheme } from "@mui/material/styles";
+import { useForm, SubmitHandler } from "react-hook-form";
+
+type LoginInputs = {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+};
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInputs>({
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginInputs> = (data) => {
+    console.log(data);
+    // Handle login logic here
+  };
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -53,7 +77,7 @@ const LoginPage = () => {
             width: "100%",
             maxWidth: 500,
             mx: "auto",
-            boxShadow: 20,
+            boxShadow: 20
           }}
         >
           <Box>
@@ -90,14 +114,15 @@ const LoginPage = () => {
             </Box>
           </Box>
 
-          <Box component="form" sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <TextField
               fullWidth
               label="Email Address"
               variant="outlined"
               size="small"
               margin="normal"
-              required
+              error={!!errors.email}
+              helperText={errors.email?.message}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
@@ -110,6 +135,13 @@ const LoginPage = () => {
                   </InputAdornment>
                 ),
               }}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Please enter a valid email address",
+                },
+              })}
             />
 
             <TextField
@@ -118,8 +150,9 @@ const LoginPage = () => {
               variant="outlined"
               size="small"
               margin="normal"
-              required
               type={showPassword ? "text" : "password"}
+              error={!!errors.password}
+              helperText={errors.password?.message}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
@@ -148,6 +181,13 @@ const LoginPage = () => {
                   </InputAdornment>
                 ),
               }}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
             />
 
             <Box
@@ -170,9 +210,12 @@ const LoginPage = () => {
                         borderRadius: 1,
                       },
                     }}
+                    {...register("rememberMe")}
                   />
                 }
-                label={<Typography variant="body2">Remember me</Typography>}
+                label={
+                  <Typography variant="body2">Remember me</Typography>
+                }
               />
               <Link
                 href="/forgot-password"
@@ -190,6 +233,7 @@ const LoginPage = () => {
             <Button
               variant="contained"
               fullWidth
+              type="submit"
               disableElevation
               sx={{
                 py: 1,
