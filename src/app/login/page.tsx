@@ -28,9 +28,17 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import PHForm from "@/components/Forms/PHForm";
 import PHInput from "@/components/Forms/PHInput";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+export const validationSchema = z.object({
+  email: z.string().email("Please Enter a valid email address"),
+  password: z.string().min(6, "Must be at least 6 characters."),
+});
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
@@ -40,8 +48,11 @@ const LoginPage = () => {
       const res = await userLogin(values);
       if (res?.data?.accessToken) {
         toast.success(res?.message);
-        router.push("/");
         storeUserInfo({ accessToken: res?.data?.accessToken });
+        router.push("/");
+      } else {
+        setError(res.message);
+        console.log(res);
       }
     } catch (error: any) {
       console.error(error.message);
@@ -84,7 +95,7 @@ const LoginPage = () => {
                 justifyContent: "center",
                 alignItems: "center",
                 flexDirection: "column",
-                mb: 4,
+                mb: 2,
               }}
             >
               <Box sx={{ mb: 1 }}>
@@ -109,10 +120,32 @@ const LoginPage = () => {
                 Log in to access your healthcare dashboard
               </Typography>
             </Box>
+            {error ? (
+              <Typography
+                sx={{
+                  backgroundColor: "red",
+                  padding: "5px",
+                  borderRadius: "2px",
+                  color: "white",
+                  textAlign: "center",
+                }}
+              >
+                {error}
+              </Typography>
+            ) : (
+              ""
+            )}
           </Box>
 
           <Box>
-            <PHForm onSubmit={handleLogin}>
+            <PHForm
+              onSubmit={handleLogin}
+              resolver={zodResolver(validationSchema)}
+              defaultValues={{
+                email: "",
+                password: "",
+              }}
+            >
               {/* <TextField
                 fullWidth
                 label="Email Address"

@@ -30,6 +30,32 @@ import { userLogin } from "@/services/actions/userLogin";
 import { storeUserInfo } from "@/services/auth.services";
 import PHForm from "@/components/Forms/PHForm";
 import PHInput from "@/components/Forms/PHInput";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+export const patientValidationSchema = z.object({
+  name: z.string().min(1, "Please Enter Your Name."),
+  email: z.string().email("Please Enter a Valid Email Address."),
+  contactNumber: z
+    .string()
+    .regex(/^\d{11}$/, "Please provide a valid phone number."),
+  address: z.string().min(1, "Plase enter your address."),
+});
+
+export const validationSchema = z.object({
+  password: z.string().min(6, "Must be at least 6 characters"),
+  patient: patientValidationSchema,
+});
+
+export const defaultValues = {
+  password: "",
+  patient: {
+    name: "",
+    email: "",
+    contactNumber: "",
+    address: "",
+  },
+};
 
 const RegisterPage = () => {
   const theme = useTheme();
@@ -81,7 +107,11 @@ const RegisterPage = () => {
             boxShadow: 20,
           }}
         >
-          <PHForm onSubmit={handleRegister}>
+          <PHForm
+            onSubmit={handleRegister}
+            resolver={zodResolver(validationSchema)}
+            defaultValues={defaultValues}
+          >
             <Box>
               <Box
                 sx={{
@@ -127,7 +157,7 @@ const RegisterPage = () => {
                     name="patient.name"
                     label="Full Name"
                     type="text"
-                    required={true}
+                    // required={true}
                     size="small"
                     fullWidth={true}
                     icon={
@@ -142,7 +172,7 @@ const RegisterPage = () => {
                     name="patient.email"
                     label="Email Address"
                     type="email"
-                    required={true}
+                    // required={true}
                     size="small"
                     fullWidth={true}
                     icon={<EmailOutlinedIcon fontSize="small" color="action" />}
@@ -152,7 +182,7 @@ const RegisterPage = () => {
                     name="password"
                     label="Password"
                     type="password"
-                    required={true}
+                    // required={true}
                     size="small"
                     fullWidth={true}
                     icon={<LockOutlinedIcon fontSize="small" color="action" />}
@@ -179,7 +209,7 @@ const RegisterPage = () => {
                   name="patient.contactNumber"
                   label="Phone Number"
                   type="text"
-                  required={true}
+                  // required={true}
                   size="small"
                   fullWidth={true}
                   icon={
@@ -192,7 +222,7 @@ const RegisterPage = () => {
                   label="Address"
                   type="text"
                   size="small"
-                  required={true}
+                  // required={true}
                   fullWidth={true}
                   multiline={true}
                   rows={3}

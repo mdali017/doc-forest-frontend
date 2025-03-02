@@ -14,7 +14,7 @@ type TInputProps = {
   rows?: number;
   multiline?: boolean;
   sx?: SxProps;
-  required: boolean;
+  required?: boolean;
 };
 
 const PHInput = ({
@@ -27,6 +27,7 @@ const PHInput = ({
   rows,
   multiline = false,
   required = false,
+  sx,
 }: TInputProps) => {
   const { control } = useFormContext();
   const [showPassword, setShowPassword] = useState(false);
@@ -44,23 +45,26 @@ const PHInput = ({
       <Controller
         control={control}
         name={name}
-        render={({ field }) => (
+        render={({ field, fieldState: {error} }) => (
           <TextField
             {...field}
             fullWidth={fullWidth}
             label={label}
             type={inputType}
             placeholder={label}
-            required={required}
+            // required={required}
             variant="outlined"
             size={size}
             margin="normal"
             multiline={multiline}
             rows={rows}
+            error={!!error}
+            helperText={error?.message}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "10px",
               },
+              ...sx
             }}
             InputProps={{
               startAdornment: icon ? (
