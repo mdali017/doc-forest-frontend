@@ -4,67 +4,42 @@ import {
   Button,
   Container,
   Grid,
-  TextField,
   Typography,
-  InputAdornment,
-  IconButton,
   Divider,
   Paper,
   FormControlLabel,
   Checkbox,
   useMediaQuery,
 } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import logo from "@/assets/icons/logo.svg";
 import Image from "next/image";
 import Link from "next/link";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useTheme } from "@mui/material/styles";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { FieldValues } from "react-hook-form";
 import { modifyPayload } from "@/utils/modifyPayload";
 import { registerPatient } from "@/services/actions/registerPatient";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { userLogin } from "@/services/actions/userLogin";
 import { storeUserInfo } from "@/services/auth.services";
-
-interface IPatientData {
-  name: string;
-  email: string;
-  contactNumber: string;
-  address: string;
-}
-
-interface IPatientRegisterFormData {
-  password: string;
-  patient: IPatientData;
-}
+import PHForm from "@/components/Forms/PHForm";
+import PHInput from "@/components/Forms/PHInput";
 
 const RegisterPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<IPatientRegisterFormData>();
-  const onSubmit: SubmitHandler<IPatientRegisterFormData> = async (values) => {
-    // console.log(values);
+  const handleRegister = async (values: FieldValues) => {
     const data = modifyPayload(values);
-    // console.log(data);
     try {
       const res = await registerPatient(data);
-      // console.log(res);
       if (res?.data?.id) {
         toast.success(res.message);
         const result = await userLogin({
@@ -79,10 +54,6 @@ const RegisterPage = () => {
     } catch (error: any) {
       console.error(error.message);
     }
-  };
-
-  const handleTogglePassword = () => {
-    setShowPassword(!showPassword);
   };
 
   return (
@@ -110,7 +81,7 @@ const RegisterPage = () => {
             boxShadow: 20,
           }}
         >
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <PHForm onSubmit={handleRegister}>
             <Box>
               <Box
                 sx={{
@@ -152,89 +123,39 @@ const RegisterPage = () => {
                     Account Information
                   </Typography>
 
-                  <TextField
-                    fullWidth
+                  <PHInput
+                    name="patient.name"
                     label="Full Name"
-                    variant="outlined"
-                    size="small"
-                    margin="normal"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                      },
-                    }}
                     type="text"
-                    {...register("patient.name")}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PersonOutlineOutlinedIcon
-                            fontSize="small"
-                            color="action"
-                          />
-                        </InputAdornment>
-                      ),
-                    }}
+                    required={true}
+                    size="small"
+                    fullWidth={true}
+                    icon={
+                      <PersonOutlineOutlinedIcon
+                        fontSize="small"
+                        color="action"
+                      />
+                    }
                   />
 
-                  <TextField
-                    fullWidth
+                  <PHInput
+                    name="patient.email"
                     label="Email Address"
                     type="email"
-                    {...register("patient.email")}
-                    variant="outlined"
+                    required={true}
                     size="small"
-                    margin="normal"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                      },
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailOutlinedIcon fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
+                    fullWidth={true}
+                    icon={<EmailOutlinedIcon fontSize="small" color="action" />}
                   />
 
-                  <TextField
-                    fullWidth
+                  <PHInput
+                    name="password"
                     label="Password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                    variant="outlined"
+                    type="password"
+                    required={true}
                     size="small"
-                    margin="normal"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "10px",
-                      },
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockOutlinedIcon fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleTogglePassword}
-                            edge="end"
-                            size="small"
-                          >
-                            {showPassword ? (
-                              <VisibilityOffOutlinedIcon fontSize="small" />
-                            ) : (
-                              <VisibilityOutlinedIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+                    fullWidth={true}
+                    icon={<LockOutlinedIcon fontSize="small" color="action" />}
                   />
                 </Box>
               </Grid>
@@ -249,65 +170,33 @@ const RegisterPage = () => {
                 )}
 
                 {!isMobile && (
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
-                    // sx={{ mb: 3 }}
-                  >
+                  <Typography variant="subtitle1" fontWeight={600}>
                     Contact Details
                   </Typography>
                 )}
 
-                <TextField
-                  fullWidth
+                <PHInput
+                  name="patient.contactNumber"
                   label="Phone Number"
                   type="text"
-                  {...register("patient.contactNumber")}
-                  variant="outlined"
+                  required={true}
                   size="small"
-                  margin="normal"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "10px",
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocalPhoneOutlinedIcon
-                          fontSize="small"
-                          color="action"
-                        />
-                      </InputAdornment>
-                    ),
-                  }}
+                  fullWidth={true}
+                  icon={
+                    <LocalPhoneOutlinedIcon fontSize="small" color="action" />
+                  }
                 />
 
-                <TextField
-                  fullWidth
+                <PHInput
+                  name="patient.address"
                   label="Address"
                   type="text"
-                  {...register("patient.address")}
-                  variant="outlined"
                   size="small"
-                  margin="normal"
-                  multiline
+                  required={true}
+                  fullWidth={true}
+                  multiline={true}
                   rows={3}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "10px",
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment
-                        position="start"
-                        sx={{ alignSelf: "flex-start", mt: 1 }}
-                      >
-                        <HomeOutlinedIcon fontSize="small" color="action" />
-                      </InputAdornment>
-                    ),
-                  }}
+                  icon={<HomeOutlinedIcon fontSize="small" color="action" />}
                 />
               </Grid>
             </Grid>
@@ -358,7 +247,6 @@ const RegisterPage = () => {
               disableElevation
               type="submit"
               sx={{
-                // mt: 3,
                 py: 1,
                 borderRadius: 2,
                 textTransform: "none",
@@ -368,7 +256,7 @@ const RegisterPage = () => {
             >
               Create Patient
             </Button>
-          </form>
+          </PHForm>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Typography variant="body2">

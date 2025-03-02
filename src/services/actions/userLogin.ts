@@ -1,12 +1,14 @@
 "use server";
 
+import { FieldValues } from "react-hook-form";
+
 type TFormValues = {
   email: string;
   password: string;
 };
 
-export const userLogin = async (data: TFormValues) => {
-//   console.log("user info", data);
+export const userLogin = async (data: FieldValues) => {
+  //   console.log("user info", data);
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/login`,
     {

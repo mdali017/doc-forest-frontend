@@ -21,17 +21,13 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useTheme } from "@mui/material/styles";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { userLogin } from "@/services/actions/userLogin";
 import { storeUserInfo } from "@/services/auth.services";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-type TFormValues = {
-  email: string;
-  password: string;
-  rememberMe: boolean;
-};
+import PHForm from "@/components/Forms/PHForm";
+import PHInput from "@/components/Forms/PHInput";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,14 +35,7 @@ const LoginPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<TFormValues>();
-
-  const onSubmit: SubmitHandler<TFormValues> = async (values) => {
+  const handleLogin = async (values: FieldValues) => {
     try {
       const res = await userLogin(values);
       if (res?.data?.accessToken) {
@@ -123,12 +112,11 @@ const LoginPage = () => {
           </Box>
 
           <Box>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <TextField
+            <PHForm onSubmit={handleLogin}>
+              {/* <TextField
                 fullWidth
                 label="Email Address"
                 type="email"
-                {...register("email")}
                 variant="outlined"
                 size="small"
                 margin="normal"
@@ -153,9 +141,31 @@ const LoginPage = () => {
                     message: "Please enter a valid email address",
                   },
                 })}
+              /> */}
+              <PHInput
+                name="email"
+                label="Email"
+                type="email"
+                required={true}
+                size="small"
+                fullWidth={true}
+                icon={
+                  <>
+                    <EmailOutlinedIcon fontSize="small" color="action" />
+                  </>
+                }
+              />
+              <PHInput
+                name="password"
+                label="Password"
+                type="password"
+                required={true}
+                size="small"
+                fullWidth={true}
+                icon={<LockOutlinedIcon fontSize="small" color="action" />}
               />
 
-              <TextField
+              {/* <TextField
                 fullWidth
                 label="Password"
                 type={showPassword ? "text" : "password"}
@@ -200,7 +210,7 @@ const LoginPage = () => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-              />
+              /> */}
 
               <Box
                 sx={{
@@ -222,7 +232,7 @@ const LoginPage = () => {
                           borderRadius: 1,
                         },
                       }}
-                      {...register("rememberMe")}
+                      // {...register("rememberMe")}
                     />
                   }
                   label={<Typography variant="body2">Remember me</Typography>}
@@ -256,7 +266,7 @@ const LoginPage = () => {
               >
                 Sign In
               </Button>
-            </form>
+            </PHForm>
 
             <Box sx={{ textAlign: "center", mt: 3 }}>
               <Typography variant="body2">
