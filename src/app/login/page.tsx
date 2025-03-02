@@ -22,8 +22,12 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useTheme } from "@mui/material/styles";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { userLogin } from "@/services/actions/userLogin";
+import { storeUserInfo } from "@/services/auth.services";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-type LoginInputs = {
+type TFormValues = {
   email: string;
   password: string;
   rememberMe: boolean;
@@ -33,22 +37,26 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
-  } = useForm<LoginInputs>({
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
-  });
+  } = useForm<TFormValues>();
 
-  const onSubmit: SubmitHandler<LoginInputs> = (data) => {
-    console.log(data);
-    // Handle login logic here
+  const onSubmit: SubmitHandler<TFormValues> = async (values) => {
+    try {
+      const res = await userLogin(values);
+      if (res?.data?.accessToken) {
+        toast.success(res?.message);
+        router.push("/");
+        storeUserInfo({ accessToken: res?.data?.accessToken });
+      }
+    } catch (error: any) {
+      console.error(error.message);
+    }
   };
 
   const handleTogglePassword = () => {
@@ -77,7 +85,7 @@ const LoginPage = () => {
             width: "100%",
             maxWidth: 500,
             mx: "auto",
-            boxShadow: 20
+            boxShadow: 20,
           }}
         >
           <Box>
@@ -114,138 +122,141 @@ const LoginPage = () => {
             </Box>
           </Box>
 
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <TextField
-              fullWidth
-              label="Email Address"
-              variant="outlined"
-              size="small"
-              margin="normal"
-              error={!!errors.email}
-              helperText={errors.email?.message}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailOutlinedIcon fontSize="small" color="action" />
-                  </InputAdornment>
-                ),
-              }}
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Please enter a valid email address",
-                },
-              })}
-            />
-
-            <TextField
-              fullWidth
-              label="Password"
-              variant="outlined"
-              size="small"
-              margin="normal"
-              type={showPassword ? "text" : "password"}
-              error={!!errors.password}
-              helperText={errors.password?.message}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockOutlinedIcon fontSize="small" color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleTogglePassword}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? (
-                        <VisibilityOffOutlinedIcon fontSize="small" />
-                      ) : (
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              })}
-            />
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mt: 1,
-                mb: 2,
-              }}
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    color="primary"
-                    size="small"
-                    sx={{
-                      "& .MuiSvgIcon-root": {
-                        fontSize: 20,
-                        borderRadius: 1,
-                      },
-                    }}
-                    {...register("rememberMe")}
-                  />
-                }
-                label={
-                  <Typography variant="body2">Remember me</Typography>
-                }
+          <Box>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <TextField
+                fullWidth
+                label="Email Address"
+                type="email"
+                {...register("email")}
+                variant="outlined"
+                size="small"
+                margin="normal"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailOutlinedIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
               />
-              <Link
-                href="/forgot-password"
-                style={{
-                  color: theme.palette.primary.main,
-                  textDecoration: "none",
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
+
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                variant="outlined"
+                size="small"
+                margin="normal"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleTogglePassword}
+                        edge="end"
+                        size="small"
+                      >
+                        {showPassword ? (
+                          <VisibilityOffOutlinedIcon fontSize="small" />
+                        ) : (
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+              />
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 1,
+                  mb: 2,
                 }}
               >
-                Forgot password?
-              </Link>
-            </Box>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      color="primary"
+                      size="small"
+                      sx={{
+                        "& .MuiSvgIcon-root": {
+                          fontSize: 20,
+                          borderRadius: 1,
+                        },
+                      }}
+                      {...register("rememberMe")}
+                    />
+                  }
+                  label={<Typography variant="body2">Remember me</Typography>}
+                />
+                <Link
+                  href="/forgot-password"
+                  style={{
+                    color: theme.palette.primary.main,
+                    textDecoration: "none",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  Forgot password?
+                </Link>
+              </Box>
 
-            <Button
-              variant="contained"
-              fullWidth
-              type="submit"
-              disableElevation
-              sx={{
-                py: 1,
-                borderRadius: 2,
-                textTransform: "none",
-                fontSize: "1rem",
-                fontWeight: 600,
-                mb: 2,
-              }}
-            >
-              Sign In
-            </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                type="submit"
+                disableElevation
+                sx={{
+                  py: 1,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  mb: 2,
+                }}
+              >
+                Sign In
+              </Button>
+            </form>
 
             <Box sx={{ textAlign: "center", mt: 3 }}>
               <Typography variant="body2">
