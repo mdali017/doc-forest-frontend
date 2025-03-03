@@ -73,7 +73,7 @@ const RegisterPage = () => {
           email: values?.patient?.email,
         });
         if (result?.data?.accessToken) {
-          router.push("/");
+          router.push("/dashboard");
           storeUserInfo({ accessToken: result?.data?.accessToken });
         }
       }

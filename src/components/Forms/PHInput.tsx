@@ -9,7 +9,7 @@ type TInputProps = {
   label?: string;
   type?: string;
   size?: "small" | "medium";
-  fullWidth: boolean;
+  fullWidth?: boolean;
   icon?: React.ReactNode;
   rows?: number;
   multiline?: boolean;
